@@ -23,4 +23,4 @@ app.on("ERROR IN APP", (err) => {
     throw err 
 })
 
-export default app        // => we can return also in this pattern : export {app}
+export default {app}
