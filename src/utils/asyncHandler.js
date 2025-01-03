@@ -17,9 +17,12 @@
 // }
 
 // 2. Using Promises
-const asyncHandler = (reqHandlder) => {
-    (err, req, res, next) => {
-        Promise.resolve(reqHandlder(err, req, res, next))
-        .catch((err) => next(err))
+// import asyncHandler from "express-async-handler";
+const asyncHandler = (reqHandler) => {
+    return (req, res, next) => {
+        Promise.resolve(reqHandler(req, res, next))
+        .catch(next)
     }
 }
+
+export { asyncHandler }

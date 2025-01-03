@@ -9,14 +9,13 @@ dotenv.config({
 
 connectDB()         // connectDB() returns a promise so we can apply .then(callback).catch(error)
 .then(() => {
-    app.listen(process.env.PORT || 8010, () => {
-        console.log(`Server is running at port : https://localhost:${process.env.PORT}`)
+    app.listen(process.env.PORT || 8000, () => {
+        console.log(`Server is running at port : http://localhost:${process.env.PORT}`)
     })
 })
 .catch((err)=> {
     console.log("MONGO CONNECTION FAILED : ",err)
 })
-
 
 /* database connection using iffe
 import mongoose from 'mongoose';

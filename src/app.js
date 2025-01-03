@@ -5,7 +5,7 @@ import cors from "cors"
 // create express app
 const app = express()
 
-// app configurations
+// app configurations middlewares
 app.use(cors({                          // => Cross Origins
     origin : process.env.CORS_ORIGIN
 }))
@@ -16,6 +16,11 @@ app.use(express.urlencoded({            // => data from url
 app.use(express.static("public"))       // => static files from public folder   
 app.use(cookieParser())                 // => cookies onsite storage to server
 
+// Using middleware routing to user
+import userRouter from "./routes/user.routes.js"
+
+app.use("/user", userRouter)
+
 
 // Handling error in app
 app.on("ERROR IN APP", (err) => {
@@ -23,4 +28,4 @@ app.on("ERROR IN APP", (err) => {
     throw err 
 })
 
-export default {app}
+export default app
