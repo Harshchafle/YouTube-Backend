@@ -1,4 +1,5 @@
 import {v2 as cloudinary} from "cloudinary";
+import fs from 'fs/promises'
 
 
 cloudinary.config({
@@ -11,14 +12,16 @@ cloudinary.config({
 const uploadOnCloudinary = async (localeFilepath) => {
     try{
         if(!localeFilepath) return null
-        const res = await cloudinary.uploader.upload(localeFilepath, {resource_type : auto})
-        console.log("file upload successful ",res)
+        const res = await cloudinary.uploader.upload(localeFilepath, {resource_type : 'auto'})
+        console.log("file upload successful ")
+        await fs.unlink(localeFilepath)
         return res
     }
     catch(error){
-        fs.unlink(localeFilepath) 
+        await fs.unlink(localeFilepath) 
+        console.error('Error during file upload:', error);
         return null
     }
 }
 
-export default {uploadOnCloudinary}
+export { uploadOnCloudinary }

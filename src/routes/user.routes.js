@@ -8,14 +8,16 @@ const router = Router()
 //declaration of all routes
 router.route("/register").post(
     upload.fields(                  // Middleware injection
-        {
-            name : "Avtar",
-            maxCount : 1
-        },
-        {
-            name : "CoverImage",
-            maxCount : 1
-        }
+        [
+            {
+                name : "avtar",
+                maxCount : 1
+            },
+            {
+                name : "coverImage",
+                maxCount : 1
+            }
+        ]
     ),
     registerUser
 )
