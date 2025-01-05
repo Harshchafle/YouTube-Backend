@@ -2,6 +2,7 @@ import express from "express"
 import cookieParser from "cookie-parser"
 import cors from "cors"
 
+
 // create express app
 const app = express()
 
@@ -15,6 +16,7 @@ app.use(express.urlencoded({            // => data from url
 }))
 app.use(express.static("public"))       // => static files from public folder   
 app.use(cookieParser())                 // => cookies onsite storage to server
+
 
 // Using middleware routing to user
 import userRouter from "./routes/user.routes.js"
