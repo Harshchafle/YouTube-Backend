@@ -20,6 +20,7 @@ const userSchema = new Schema(
             unique : true,
             lowercase : true,
             trim : true,
+            min: [5, "min 5 characters"],
         },
         fullName : {
             type : String,
