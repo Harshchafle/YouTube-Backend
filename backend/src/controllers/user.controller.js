@@ -1,5 +1,5 @@
 import { asyncHandler } from "../utils/asyncHandler.js"
-import { ApiErrors } from "../utils/ApiErrors.js"
+import ApiErrors from "../utils/ApiErrors.js"
 import { User } from "../models/User.model.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { ApiResponses } from "../utils/ApiResponses.js"
@@ -38,8 +38,9 @@ const registerUser = asyncHandler( async (req, res) => {
     if(
         [fullName, username, email, password].some((field) => 
             field?.trim() === ""
-        )){
-            throw new ApiErrors(400, "All fields are Compulsory")
+        )
+    ){
+        throw new ApiErrors(400, "All fields are Compulsory")
     }
 
     const existedUser = await User.findOne(
@@ -52,6 +53,7 @@ const registerUser = asyncHandler( async (req, res) => {
         throw new ApiErrors(409, "User Already Exist")
     }
 
+    // req.files -> multer middleware
     const avtarLocalPath = req.files?.avtar[0].path 
     const coverImageLocalPath = req.files?.coverImage[0].path
     if( !avtarLocalPath ){
@@ -185,4 +187,8 @@ const logoutUser = await asyncHandler( async (req, res) => {
     .json(new ApiResponses(200, {}, "User logged Out"))
 })
 
-export { registerUser, loginUser, logoutUser}
+export { 
+    registerUser, 
+    loginUser, 
+    logoutUser,
+}

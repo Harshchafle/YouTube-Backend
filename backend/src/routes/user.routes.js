@@ -6,7 +6,7 @@ import { verifJwt } from "../middlewares/auth.middleware.js"
 // router creation
 const router = Router()
 
-//declaration of all routes
+// declaration of all routes
 router.route("/register").post(
     upload.fields(                  // Middleware injection
         [

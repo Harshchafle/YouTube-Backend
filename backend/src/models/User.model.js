@@ -36,15 +36,15 @@ const userSchema = new Schema(
         coverImage : {
             type : String,
         },
-        watchHistory : {
-            type : {
+        watchHistory : [
+            {
                 type : Schema.Types.ObjectId,
                 ref : "Videos"
             }
-        },
+        ],
         password : {
             type : String,
-            required : [true , "Password id required"]
+            required : [true , "Password is required"]
         },
         refreshToken : {
             type : String
