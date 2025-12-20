@@ -17,7 +17,7 @@ const registerUser = asyncHandler( async (req, res) => {
      * 8. return response
      */
 
-    const {fullName, username, email, password} = req.body
+    const {fullName, userName, email, password} = req.body
     // console.log("FullName : "+fullName+" |UserNAme : "+username+" |Email : "+email+" |Password : "+password)
 
     /*
@@ -36,7 +36,7 @@ const registerUser = asyncHandler( async (req, res) => {
     */
     
     if(
-        [fullName, username, email, password].some((field) => 
+        [fullName, userName, email, password].some((field) => 
             field?.trim() === ""
         )
     ){
@@ -45,7 +45,7 @@ const registerUser = asyncHandler( async (req, res) => {
 
     const existedUser = await User.findOne(
         {
-            $or : [{ username }, { email }]
+            $or : [{ userName }, { email }]
         }
     )
     if( existedUser ){
@@ -55,7 +55,11 @@ const registerUser = asyncHandler( async (req, res) => {
 
     // req.files -> multer middleware
     const avtarLocalPath = req.files?.avtar[0].path 
-    const coverImageLocalPath = req.files?.coverImage[0].path
+    let coverImageLocalPath;
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
+        coverImageLocalPath = req.files?.coverImage[0].path
+    }
+
     if( !avtarLocalPath ){
         throw new ApiErrors(400, "Avtar field cannot be empty")
     }
@@ -72,7 +76,7 @@ const registerUser = asyncHandler( async (req, res) => {
         coverImage : coverImage?.url || "",
         email,
         password,
-        userName : username.toLowerCase()
+        userName : userName.toLowerCase()
     })
 
     const createdUser = await User.findById(user._id).select(
@@ -100,38 +104,39 @@ const loginUser = asyncHandler( async (req, res) => {
      * 6. remove password and refresh token field from response -> .select("-password -refreshToken")
      * 7. return response -> ret res.cookie(accessToken).cookie(refreshToken).json(ststCode, data, msg)
      */
+    // test user : testuser, harshcafle@gmail.com , harsh@123 
 
     const generateAccessAndRefreshToken = async( userId ) => {
         try {
             const user = await User.findById(userId)
             const accessToken = user.generateAccessToken()
             const refreshToken = user.generateRefreshToken()
-
+            console.log("Generated Tokens : ", accessToken, refreshToken)
             user.refreshToken = refreshToken
-            await User.save({ validateBeforeSave : false })
+            await user.save({ validateBeforeSave : false })
             
             return { accessToken, refreshToken }
         }
         catch(error){
-            throw new ApiErrors(500, "Something Went Wrong")
+            throw new ApiErrors(500,  error || "Something Went Wrong")
         }
     }
 
-    const { username , email , password } = req.body
-
-    if(!username || !email){
+    const { userName , email , password } = req.body
+    // console.log("Login Req Body : ",req.body)
+    if(!(userName || email)){
         throw new ApiErrors(400, "Invalid login credentials")
     }
 
     const existedUser = await User.findOne(
-        $or = [ { username } , { email } ]
+        { $or : [ { userName } , { email } ] }
     )
 
     if(!existedUser){
         throw new ApiErrors(400, "user does not exist with provided Email or Username")
     }
 
-    const isPasswordValid = await isPasswordCorrect(password)
+    const isPasswordValid = await existedUser.isPasswordCorrect(password)
     if(!isPasswordValid){
         throw new ApiErrors(401, "InCorrect Password")
     }
@@ -145,12 +150,12 @@ const loginUser = asyncHandler( async (req, res) => {
     // security of cookie
     const options = {
         httpOnly : true,
-        secure : true
+        secure : true  // in devlopment it will be false but in production it should be true
     }
 
     return res.status(200)
     .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshTokoen, options)
+    .cookie("refreshToken", refreshToken, options)
     .json(
         new ApiResponses(
             200,
@@ -163,7 +168,7 @@ const loginUser = asyncHandler( async (req, res) => {
 
 })
 
-const logoutUser = await asyncHandler( async (req, res) => {
+const logoutUser = asyncHandler( async (req, res) => {
     await User.findByIdAndUpdate(
         req.user._id,
         {
@@ -182,8 +187,8 @@ const logoutUser = await asyncHandler( async (req, res) => {
     }
 
     return res.status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
     .json(new ApiResponses(200, {}, "User logged Out"))
 })
 

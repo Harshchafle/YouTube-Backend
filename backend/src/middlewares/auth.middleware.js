@@ -1,12 +1,13 @@
 import jwt from "jsonwebtoken"
 import asyncHandler from "express-async-handler"
 import ApiErrors from "../utils/ApiErrors.js"
+import { User } from "../models/User.model.js"
 
 export const verifJwt = asyncHandler( async(req, res, next) => {    //-> middleware
     try{
-        const token = req.cookie?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
-
-        if(!token){
+        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
+        // console.log("Token in middleware:", token);
+        if(!token || typeof token !== "string"){
             throw new ApiErrors(401, "Unauthorised Access")
         }
 
