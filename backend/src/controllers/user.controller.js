@@ -239,9 +239,67 @@ const refershAccessToken = asyncHandler( async (req, res) => {
     }   
 })
 
+const changePassword = asyncHandler( async (req, res) => {
+    const { oldPassword, newPassword, confirmNewPassword } = req.body
+
+    // We can use req.user.id because user changing pass means he is logged in and logged in user has a middleware adding user in req
+    const user = await User.findById(req.user?._id)
+
+    const isPasswordValid = await user.isPasswordCorrect(oldPassword)
+
+    if(!isPasswordValid){
+        throw new ApiErrors(400, "Invalid Current Password")
+    }
+
+    if(newPassword !== confirmNewPassword){
+        throw new ApiErrors(401, "New Password and Confirm password are not matching")
+    }
+
+    user.password = newPassword
+    await user.save({validateBeforeSave: false})
+
+    return res
+    .status(200)
+    .json(new ApiResponses( 200, {}, "Password changed Sussessfully" ))
+})
+
+const getUser = asyncHandler( async (req, res) => {
+    return res
+    .status(200)
+    .json(new ApiResponses(200, req.user, "User fetched successfully"))
+})
+
+const updateUserDetails = asyncHandler( async (req, res) => {
+    const  { fullName, email } = req.body
+
+    if(!(fullName || email)){
+        throw new ApiErrors(400, "Bad Request to change fullName or Email")
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set : {
+                fullName,       // both ways are correct to update fields
+                email : email
+            }
+        },
+        {new : true}
+    ).select("-password -refreshToken")
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponses(200, updatedUser, "User details updated successfully")
+    )
+})
+
 export { 
     registerUser, 
     loginUser, 
     logoutUser,
     refershAccessToken,
+    changePassword,
+    getUser,
+    updateUserDetails,
 }
