@@ -36,7 +36,7 @@ router.route("/").get(getAllVideos)
 router
     .route("/:videoId")
     .get(getVideoById)
-    .patch(updateVideo)
+    .patch(upload.single("thumbnail"), updateVideo)
     .delete(deleteVideo)
 
 export default router

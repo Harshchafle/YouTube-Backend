@@ -20,9 +20,11 @@ app.use(cookieParser())                 // => cookies onsite storage to server
 
 // Using middleware routing to user
 import userRouter from "./routes/user.routes.js"
+import videoRouter from "./routes/video.route.js"
 
 // use routers here for specific roles then control passes to middlewares
-app.use("/user", userRouter)
+app.use("/api/v1/user", userRouter)
+app.use("/api/v1/videos", videoRouter)
 
 
 
