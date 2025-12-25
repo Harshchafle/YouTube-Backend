@@ -49,7 +49,7 @@ router.route("/update-account").patch(verifJwt, updateUserDetails)
 
 router.route("/avatar").patch(verifJwt, upload.single("avatar"), updateUserAvtar)
 
-router.route("/cover-image").patch(verifJwt, upload.single("/coverImage"), updateUserCoverImage)
+router.route("/cover-image").patch(verifJwt, upload.single("coverImage"), updateUserCoverImage)
 
 router.route("/c/:username").get(verifJwt, userChannelProfile)
 

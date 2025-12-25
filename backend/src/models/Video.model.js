@@ -6,22 +6,29 @@ const videoSchema = new Schema(
     {
         videoFile : {
             type : String,
-            required : true
+            required : [true, "Video file is required"]
         },
-        thumbNail : {
+        thumbnail : {
             type : String,
+            required : [true, "Thumbnail is required"]
+        },
+        owner : {
+            type : mongoose.Schema.Types.ObjectId,
+            ref : "User",
             required : true
         },
         title : {
             type : String,
-            required : true
+            required : true,
+            trim : true,
+            index : true    // For faster search
         },
         description : {
             type : String,
             required : true
         },
         duration : {
-            type : Number,
+            type : Number,  // In seconds, we'll get this from Cloudinary
             required : true
         },
         views : {
