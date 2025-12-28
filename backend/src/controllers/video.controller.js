@@ -69,7 +69,28 @@ const uploadVideo = asyncHandler( async (req, res) => {
 })
 
 const getAllVideos = asyncHandler( async (req, res) => {
+    /*
+    Step 1: Extract and validate query parameters
+        - Get page, limit, sortBy, sortType, query, userId from req.query
+        - Set defaults: page=1, limit=10, sortBy=createdAt, sortType=desc
+        - Convert strings to numbers where needed
 
+    Step 2: Build MongoDB aggregation pipeline
+        - Stage 1: $match - Filter only published videos
+        - Stage 2: $match - If userId provided, filter by owner
+        - Stage 3: $match - If query provided, search in title/description
+        - Stage 4: $lookup - Populate owner details (username, avatar)
+        - Stage 5: $sort - Sort by specified field
+        - Stage 6: $skip - Skip videos from previous pages
+        - Stage 7: $limit - Limit results per page
+
+    Step 3: Execute aggregation with pagination plugin
+        - Use mongooseAggregatePaginate (you already added this to schema!)
+        - Get total count, page info, and results
+
+    Step 4: Return response
+        - Send videos array with pagination metadata
+    */
 })
 
 const getVideoById = asyncHandler( async (req, res) => {
