@@ -304,7 +304,7 @@ const updateUserAvtar = asyncHandler( async (req, res) => {
     const avtar = await uploadOnCloudinary(avtarLocalPath)
 
     if(!avtar.url){
-        throw new ApiErrors(400, "Error while uploading avtar on cloudinary")
+        throw new ApiErrors(500, "Error while uploading avtar on cloudinary")
     }
 
     const updatedUser = await User.findByIdAndUpdate(
