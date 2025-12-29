@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import ApiErrors from "../utils/ApiErrors";
 import { ApiResponses } from "../utils/ApiResponses";
 import { asyncHandler } from "../utils/asyncHandler";
@@ -5,6 +6,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary";
 import { Video } from "./../models/Video.model";
 import { v2 as cloudinary } from "cloudinary";
 import fs from 'fs/promises';
+import { title } from "process";
 
 
 
@@ -91,6 +93,39 @@ const getAllVideos = asyncHandler( async (req, res) => {
     Step 4: Return response
         - Send videos array with pagination metadata
     */
+
+    const { 
+        page = 1, 
+        limit = 10, 
+        query, 
+        sortBy = "createdAt", 
+        sortType = "desc", 
+        userId 
+    } = req.query;
+
+    const pageNum = parseInt(page)
+    const limitNum = parseInt(limit)
+
+    // Build match condition
+    const matchStage ={
+        isPublished : true
+    }
+
+    // if user Id provided , filter by owner
+    if (userId) {
+        matchStage.owner = mongoose.Types.ObjectId(userId)
+    }
+
+    // If search query provided, add text search
+    if (query) {
+        matchStage.$or = [
+            { title : { $regex: query, $options: 'i' } },
+            { description: { $regex: query, $options: 'i' } }
+        ]
+    }
+
+    // Build aggregation pipeline
+    
 })
 
 const getVideoById = asyncHandler( async (req, res) => {
