@@ -125,7 +125,59 @@ const getAllVideos = asyncHandler( async (req, res) => {
     }
 
     // Build aggregation pipeline
-    
+    const pipeline = [
+        {
+            $match : {
+                matchStage
+            }
+        },
+        {
+            $lookup : {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "ownerDetails"
+            }
+        },
+        {
+            $unwind: "$ownerDetails"
+        },
+        {
+            $project : {
+                videoFile: 1,
+                thumbnail: 1,
+                title: 1,
+                description: 1,
+                duration: 1,
+                views: 1,
+                createdAt: 1,
+                "ownerDetails.username": 1,
+                "ownerDetails.fullName": 1,
+                "ownerDetails.avatar": 1
+            }
+        },
+        {
+            $sort: {
+                [sortBy]: sortType === "asc" ? 1 : -1
+            }
+        }
+    ]
+
+    // using aggregation paginate plugin
+    const options = {
+        page : pageNum,
+        limit : limitNum
+    }
+
+    const videos = await Video.aggregatePaginate(
+        Video.aggregate(pipeline),
+        options
+    )
+
+    return res.status(200).json(
+        new ApiResponses(200, videos, "Videos fetched successfully")
+    )
+
 })
 
 const getVideoById = asyncHandler( async (req, res) => {
