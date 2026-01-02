@@ -4,9 +4,9 @@ import { ApiResponses } from "../utils/ApiResponses";
 import { asyncHandler } from "../utils/asyncHandler";
 import { uploadOnCloudinary } from "../utils/cloudinary";
 import { Video } from "./../models/Video.model";
+import { User } from "./../models/User.model";
 import { v2 as cloudinary } from "cloudinary";
 import fs from 'fs/promises';
-import { title } from "process";
 
 
 
@@ -181,7 +181,86 @@ const getAllVideos = asyncHandler( async (req, res) => {
 })
 
 const getVideoById = asyncHandler( async (req, res) => {
+    const { videoId } = req.params;
 
+    // Validationg ObjectId
+    if(!mongoose.isValidObjectId(videoId)){
+        throw new ApiErrors(400, "Invalid VideoId")
+    }
+
+    // Build Aggregation Pipeline
+    const video = await Video.aggregate([
+        {
+            $match : {
+                _id : new mongoose.Types.ObjectId(videoId)
+            }
+        },
+        {
+            // Lookup owner details
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner",
+                pipeline: [
+                    {
+                        // Get subscriber count for this channel
+                        $lookup: {
+                            from: "subscriptions",
+                            localField: "_id",
+                            foreignField: "channel",
+                            as: "subscribers"
+                        }
+                    },
+                    {
+                        $addFields: {
+                            subscribersCount: { $size: "$subscribers" },
+                            isSubscribed: {
+                                $cond: {
+                                    if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+                                    then: true,
+                                    else: false
+                                }
+                            }
+                        }
+                    },
+                    {
+                        $project: {
+                            username: 1,
+                            fullName: 1,
+                            avatar: 1,
+                            subscribersCount: 1,
+                            isSubscribed: 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $unwind: "$owner"
+        }
+    ])
+
+    // Check if video exists
+    if(!video || video.length === 0){
+        throw new ApiErrors(404, "Video Not Found")
+    }
+
+    // Increment views
+    await Video.findByIdAndUpdate(videoId, {
+        $inc : {views : 1}
+    })
+
+    // Add to watch history
+    if(req.user){
+        await User.findByIdAndUpdate(req.user._id, {
+            $addToSet : { watchHistory : videoId }  // $addToSet prevents duplicates
+        })
+    }
+
+    return res.status(200).json(
+        new ApiResponses(200, video[0], "Video fetched Successfully")
+    )
 })
 
 const updateVideo = asyncHandler( async (req, res) => {
